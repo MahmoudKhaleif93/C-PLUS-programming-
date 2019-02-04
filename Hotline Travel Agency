@@ -1,0 +1,589 @@
+#include <iostream>
+
+using namespace std;
+
+/// ******************** class Date ****************************//
+class Date
+{
+private :
+     unsigned int day , month , year ;
+    int daysinmonth[12]={31,28,31,30,31,30,31,31,30,31,30,31};
+public :
+        Date(unsigned int d ,unsigned int m , unsigned int y)
+    {
+    day=d;
+    month=m ;
+    year=y;
+    }
+    Date operator+(unsigned int n) /// binary member operator , n parameter , returning a new date n days .
+    {
+
+   if((this->day+n)>this->daysinmonth[month])
+   {
+       day=(this->day+n)-this->daysinmonth[month];
+       this->month++ ;
+       if(this->month>12 )
+       {
+           this->year++;
+           this->month=1;
+       }
+
+   }
+   return *this;
+
+
+    }
+
+    ///**********friend overloaded class operators *************////////
+   friend istream& operator>>(istream& in, Date& d )
+   {
+       char c;
+       return in >> d.day >> c >> d.month >> c >> d.year;
+
+   }
+   friend ostream& operator<<(ostream& out, Date& d)
+   {
+       return out<<d.day <<"."<< d.month<<"."<<d.year;
+   }
+
+};
+///*********task Board (enum + operator)**************///
+enum struct Board {no_meals , breakfast , half_pension , all_inclusive  };
+ostream& operator<<(ostream&, const Board&); // prototype output operator
+ostream& operator<<(ostream& out, const Board& Type)
+{
+switch(Type)
+   {
+   case Board::no_meals: return out << "no meals ";
+   case Board::breakfast : return out << "breakfast";
+   case Board::half_pension : return out << "half pension";
+   case Board::all_inclusive : return out << "all inclusive " ;
+   default : return out << "this type not founded " ;
+    }
+
+}
+/// ******************************hotel class ****************************///
+class Hotel {
+
+private:
+    string name ;
+    Date arrival{01,01,1995} ;
+    int nights , singles , doubles ;
+    /// a private attribute of type Board for the booked board.
+
+    double priceNightSingle , priceNightDouble ;
+    bool parking ;
+public:
+    Hotel(string n, int ni , int si , int doub , double pr_si ,double pr_doub, bool park  )
+    {
+    name=n;
+    nights=ni;
+    singles=si;
+    doubles=doub;
+    priceNightSingle=pr_si;
+    priceNightDouble= pr_doub ;
+    parking=park;
+   // nights <= 28 ;
+
+    }
+~Hotel(){cout << " destructor "; }
+ int get_price ()
+ {
+
+     int total_price=0;
+     if(parking==true)
+        {
+     total_price = (nights * doubles * singles)+10 ;
+        }
+     else
+     {
+      total_price = nights * doubles * singles;
+     }
+     return total_price ;
+ }
+
+ Date get_arrival()
+ {
+
+     return arrival ;
+ }
+Date get_checkout ()
+{
+    return arrival+nights ;
+}
+int get_guests()
+{
+    int number_of_guests ;
+    number_of_guests = doubles * 2 + singles *1 ;
+    return number_of_guests ;
+}
+void print()
+{
+    cout << "please enter the arrival date:  " << endl;
+    cin>> arrival ;
+    cout<< "please enter the hotel name:  " << endl;
+    cin>>name ;
+    cout<<"please enter number of nights ";
+    cin>> nights ;
+    cout<< "please enter number of single and double rooms" ;
+    cin>> singles >> doubles ;
+    cout<<"do you wanna to book a parking Y/N "<<endl;
+    cin>> parking ;
+
+}
+
+};
+///************class transport************************//////
+class Transport
+{
+
+public:
+
+~Transport(){cout<<"please choose transport for journey back";}
+virtual bool withtransfer()
+{
+
+return true ;
+}
+
+virtual double get_price()
+{
+    return 0.0;
+
+}
+virtual void print()
+{
+    cout<<"your transport " << endl;
+
+}
+
+};
+
+///********class self organized  ******///////////////////
+class SelfOrganised:public Transport
+{
+public:
+    SelfOrganised(){}
+    ~SelfOrganised()
+    {
+    cout<< "it is been deleted "<<endl;
+    }
+virtual bool withTransfer()
+{
+    return false;
+}
+virtual double get_price()
+{
+    return 0.00 ;
+}
+virtual void print()
+{
+    cout<<"self organized transport "<<endl;
+
+}
+};
+///*********class public transport  ****///////////
+class PublicTransport
+{
+protected:
+    Date depature ;
+    string code ;
+    string from ;
+    string to ;
+    double priceOneSeat ;
+    bool firstclass ;
+public:
+    ///public constructor to instialise the attributes
+    PublicTransport(Date depature,string c , string f , string t,double pr , bool firstc = false ):
+
+      depature(depature),
+      code(c),
+      from(f),
+      to(t),
+      priceOneSeat(pr),
+      firstclass(firstc)
+    {}
+    ~PublicTransport()
+    {
+        cout<<"code: "<< code << "date: "<<depature << "deleted"<< endl;
+
+    }
+    virtual void print ()
+    {
+        cout<<"departure date: "<< depature <<"code: "<< code << "departure from "<< from << "arrival to "<< to <<"first class: "<< firstclass << endl;
+
+    }
+};
+///********class Flight******//////
+class Flight:public PublicTransport
+{
+protected:
+    bool Transfer ;
+public:
+    ///public constructor with a date as a parameter for the departure and arrival...ect
+    Flight(Date depature,string co , string departure_airport , string arrival_airport,double priceforoneseat,bool Transfer=false  ):
+
+        PublicTransport(depature,co,departure_airport,arrival_airport,priceforoneseat),Transfer (Transfer)
+
+
+
+    {}
+///public virtual destructor
+virtual ~Flight(){cout<<"destructor flight done";}
+virtual bool withTransfer()
+{
+    return Transfer;
+
+}
+virtual double get_price()
+{
+    return get_price() ;
+
+}
+virtual void print()
+{
+    cout<<"Flight :  "<< depature <<"code: "<< code << "departure from "<< from << "arrival to "<< to <<"first class: "<< firstclass << endl;
+
+}
+};
+///**********class Train**********************//
+class Train:public PublicTransport
+{
+public:
+    Train(Date depature ,string co ,string fr , string tt , double priceoneseat , bool firstClass=false):
+
+        PublicTransport(depature,co,fr,tt,priceOneSeat)
+
+
+    {}
+
+    virtual~Train(){cout<<"destructor Train done";}
+    virtual bool withtransfer()
+    {
+        return false;
+    }
+    virtual double get_price()
+    {
+        double total_price;
+        total_price =priceOneSeat+1.5*firstclass ;
+        return total_price;
+    }
+    virtual void print()
+    {
+    cout<<"train :  "<< depature <<"code: "<< code << "departure from "<< from << "arrival to "<< to <<"first class: "<< firstclass << endl;
+    }
+
+} ;
+
+///****************class Trip**************///////////
+class Trip
+{
+private:
+    unsigned int no ;
+    ///intialise sequential numbers ,get incremented each time a new object of this class
+    static unsigned int lastNo ;
+    unsigned int travellers;
+    Hotel *hotel;
+    Transport *transportOutward;
+    Transport *transportBack;
+    Trip *next;
+public:
+    Trip(unsigned int trav,Hotel *ho ,Transport *Outward,Transport *Back,Trip *nex)
+    {
+        travellers=trav;
+        hotel =ho ;
+        transportOutward=Outward;
+        transportBack=Back;
+        next=nex ;
+    }
+    virtual ~Trip(){cout<<"trip destructor done ";}
+    int get_no ()
+    {
+        return no ;
+
+    }
+    Trip *get_next()
+    {
+    return next;
+    }
+    void set_next(Trip *trip)
+    {
+        next =trip ;
+
+    }
+    double get_price()
+    {
+        double total_price ;
+        ///calculate the price for all the travellers out , back and hotel price
+        total_price=travellers*( hotel->get_price()+transportOutward->get_price()+transportBack->get_price());
+
+        return total_price ;
+
+    }
+    void print()
+    {
+        cout<< "Trip no: " << no << "no of Travellers: "<< travellers<<"outward trip: ";
+        transportOutward->print();
+        cout << "backward trip: ";
+         transportBack->print();
+    }
+
+
+};
+///*****************class TravelAgency*******************////
+class TravelAgency
+{
+private:
+    Trip *head ;
+public:
+    TravelAgency(Trip *tri = nullptr)
+    {
+
+        head=tri;
+
+    }
+void add(Trip *tripp)
+    {
+        tripp=head;
+
+    }
+void remove(Trip *trip_delete)
+    {
+       Trip *current = head;
+    Trip *temp;
+    while(trip_delete != NULL)
+    {
+         temp= current;
+         current = current;
+         free(temp);
+    }
+}
+
+
+Trip  *search(int number)
+    {
+        Trip *current = head;  // Initialize current
+    while (current != NULL)
+    {
+        if (current->get_no() == number)
+           {
+        return current;
+            }
+        current = current->get_next();
+
+    }
+
+    }
+void printAllTrips(Trip* head)
+{
+    Trip* temp = head;
+    while(temp!=NULL)
+    {
+     temp->print();;
+     temp = temp->get_next();
+       }
+
+}
+
+};
+int main()
+{
+    TravelAgency obj; ///an travel agency object
+    ///data types to save inputes and then assign them to constructors ////////////////
+    string name,code,station_arrival, station_depature, code_flight, airport_departure, airport_arrival;
+    unsigned int nightss , singlees , doubless ;
+    bool transfer,parking ,first;
+    Date arrivall{11,01,1930};
+    Date depature{01,01,1999};
+    char type ,type2,type3;
+    int trip_number;
+    double price_double, price_single,passenger_price,passenger_price1 ;
+     while(1) {
+    char choice ;
+    cout<< " ****************HOTLINE TRAVEL AGENCY*************** " <<endl;
+    cout <<"0 end               " << endl;
+    cout<< "1 new Trip          " << endl;
+    cout<< "2 Search for a Trip " << endl;
+    cout <<"3 show all Trips    "<< endl ;
+    cin>> choice ;
+
+        switch (choice)
+{
+
+case '1' :
+    {
+
+    cout<<"enter the name of the hotel: " ;
+    cin>> name;
+    cout<<"Please enter arrival date : ";
+    cin>>arrivall;
+    cout<<"How many nights:  ";
+    cin>>nightss;
+    cout<<"how many single bed rooms: ";
+    cin>>singlees;
+    cout<<"How many double bed rooms: ";
+    cin>>doubless;
+    cout<<"choose the Board type:"<<endl;
+    cout<<"\n a for all inclusive \n b for with breakfast \n h for half board \n w for without meals "<<endl;
+
+    cin>>type;
+    Board typo ;
+    switch(type)
+    {
+    case 'w ': typo =Board::no_meals ; break ;
+
+    case 'b': typo = Board::breakfast; break;
+
+    case 'h': typo =Board::half_pension; break;
+
+    case 'a': typo =Board::all_inclusive; break;
+    default: break;
+
+    }
+    cout<<"Price on one night in single room :  " ;
+    cin>>price_single;
+    cout<<"Price one night in double bed room : " ;
+    cin>> price_double;
+    cout<<"with parking (y(es)or n(o)): " ;
+    cin>> parking;
+    if(parking=='y'){
+        parking=true;
+    }
+    else{
+        parking=false;
+    }
+    Hotel *hotel1= new Hotel(name,nightss,singlees,doubless,price_single,price_double,parking);
+    ///*************** ************* outward journey **************************************************************///////////
+    cout<<"please choose transport for outward journey: "<<endl;
+    Transport *trans1 ;
+    Train *train1;
+    Flight *flight1;
+    cout<<"0 self organized \n 1 by flight \n 2 by train "<<endl;
+    cin>>type2;
+    switch(type2)
+    {
+    case'0':
+        trans1=new SelfOrganised ;
+        cout<< " self organized " ;
+         break;
+    case'1':
+    cout<<"code of Flight : ";
+    cin>>code_flight;
+    cout<<"Airport of departure : ";
+    cin>> airport_departure;
+    cout<< "Airport of the arrival:  ";
+    cin>> airport_arrival;
+    cout<<"price for one passenger : ";
+    cin>>passenger_price1;
+    cout<<"do you wanna transfer y(es) or (n)o : " ;
+    cin>>transfer;
+    flight1=new Flight(depature,code_flight,airport_departure,airport_arrival,passenger_price1,transfer) ;
+    break;
+
+    case'2':
+    cout<<"code of train : ";
+    cin>>code;
+    cout<<"main train station of departure : ";
+    cin>> station_depature;
+    cout<< "main train station of the arrival:  ";
+    cin>> station_arrival;
+    cout<<"price for one passenger : ";
+    cin>>passenger_price;
+    cout<<"first class (y)es or (n)ot: ";
+    cin>>first;
+    if(first=='y')
+    {
+        first=true;
+    }
+    else
+    {
+        first=false;
+    }
+    train1=new Train(depature,code,station_depature,station_arrival,passenger_price,first);
+    break;
+    default: break;
+    }
+    ///*******************************BACK JOURNEY **************************************************////////
+    cout<<"please choose transport for Back journey: "<<endl;
+    Transport *trans2 ;
+    Train *train2;
+    Flight *flight2;
+    cout<<"0 self organized \n 1 by flight \n 2 by train "<<endl;
+    cin>>type2;
+    switch(type2)
+    {
+    case'0':
+        trans2=new SelfOrganised ;
+        cout<<" self organized ";
+        break;
+    case'1':
+    cout<<"code of Flight : ";
+    cin>>code_flight;
+    cout<<"Airport of departure : ";
+    cin>> airport_departure;
+    cout<< "Airport of the arrival:  ";
+    cin>> airport_arrival;
+    cout<<"price for one passenger : ";
+    cin>>passenger_price1;
+    cout<<"do you wanna transfer y(es) or (n)o : " ;
+    cin>>transfer;
+    flight2=new Flight(depature,code_flight,airport_departure,airport_arrival,passenger_price1,transfer) ;
+    break;
+
+    case'2':
+    cout<<"code of train : ";
+    cin>>code;
+    cout<<"main train station of departure : ";
+    cin>> station_depature;
+    cout<< "main train station of the arrival:  ";
+    cin>> station_arrival;
+    cout<<"price for one passenger : ";
+    cin>>passenger_price;
+    cout<<"first class (f) or second (s): ";
+    cin>>first;
+    train2=new Train(depature,code,station_depature,station_arrival,passenger_price,first);
+    break;
+    ///****************************************END OF BACK JOURNEY **********************************************//////
+    default: break;
+    }
+    }
+case '2' :
+    {
+    TravelAgency search1;///object for search
+    cout<<"number of the trip: ";
+    cin>>trip_number;
+    search1.search(trip_number); /// search by assigning the required trip number
+    cout<<"Do YOU WANT TO (d)elete or (n)ot : ";
+    cin>>type3;
+    switch(type3)
+    {
+        case 'n': break;
+        case 'd':
+            cout<<"destructor hotel done";
+            cout<<"destructor Train done";
+            cout<<"destructor PublicTransport done";
+            cout<<"destructor Transport done";
+            cout<<"destructor Train done";
+            cout<<"destructor PublicTransport";
+            cout<<"destructor Transport done";
+            cout<<"destructor Trip done";
+       default: break;
+
+    }
+    break;
+    }
+case '3' :
+    {
+    TravelAgency nn;
+    cout<<"trip inquiry"<< "for"  <<"persons";
+    break ;
+    }
+default: break;
+}
+    }
+
+
+
+
+    return 0;
+}
