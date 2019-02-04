@@ -1,0 +1,166 @@
+#include <iostream>
+#include<fstream>
+#include<string>
+#include<list>
+using namespace std;
+/// *************prototype ****************///////
+
+void diseaselist(string  , string);
+
+ ///********************************structure to as a node*********************////
+struct disease {
+string code ;
+string diagnose ;
+disease *next ;
+
+};
+
+///*************** global pointer to head of the list************///
+ disease* head = NULL;
+
+/// function to read the file and separate the line to code and diagnose
+///and it is also skip the first line
+
+ void readCSVfileWithWHO(string fileName, char separator)
+{
+   string code , diagnose , the_rest, skip_first_line  ;
+   ifstream inFile;
+   inFile.open(fileName.c_str());
+   //checking if the file opened or not
+   if (!inFile.is_open())
+      cerr << "error opening file \"" << fileName << '\"' << endl;
+   else
+   {
+      //cout << "input file \"" << fileName << "\" opened..." << endl;
+      ///skipping the first line
+
+getline(inFile, skip_first_line);
+
+         code ="";
+         diagnose = "";
+         while ( inFile.good())
+         {
+             ///*******getting the lines till separators************///
+            getline(inFile , code , ';');
+            getline(inFile, diagnose, ';');
+            getline(inFile, the_rest, '\n');
+            diseaselist(code , diagnose);
+
+
+         }
+
+      }
+
+      inFile.close();
+      //cout << " input file closed" << endl;
+   }
+
+///******************a linked list to store the file data as code , diagnose*****************////
+void diseaselist(string a , string b){
+ disease* n = new disease ;
+ n->code =  a;
+ n->diagnose = b;
+ n->next = NULL;
+ if (head == NULL){head = n ; }
+ else{
+    disease* temp = head;
+    while (temp->next != NULL){
+        temp = temp->next;
+
+}
+temp->next = n ;
+
+ }}
+
+///*******function to print the linked list as plus part*************///
+ void printList()
+ {
+ disease* m = head ;
+ while (m != NULL)
+ {
+     cout << m->code <<   "  "<< m->diagnose<<endl ;
+       m = m ->next;
+ }
+ }
+/// function to search for the diagnoses and code .
+///the function also output the results
+///there is a counter to count the  matched results
+list<disease*> search (disease* head , string searched_code , int mode )
+{
+    disease* current = head ;
+    list<disease*> results ;
+    int count = 0;
+    while (current != NULL)
+    {
+        if(mode == 0 )
+        {
+            if(current->code == searched_code){
+                results.push_back(current);
+                cout << current->code<<  " " << current->diagnose << endl ;
+                cout<< count << "  entities found " << endl;
+
+
+                }
+                count++ ;
+
+        }
+
+        else if (mode==1)
+        {
+            if(current->diagnose == searched_code){
+                results.push_back(current);
+                cout<< current->diagnose<<   "  "<< current->code<<endl;
+                cout<< count << "  entities found " << endl;
+            }
+             count++ ;
+        }
+
+        current = current-> next ;
+    }
+    return results ;
+}
+
+
+int main()
+{
+    char choice;
+    string code ,diagnose , searched_code= "" ;
+    ///***************Here you can attach the directory of your Excel File **********************///////////////
+    string filename = "Section111ValidICD10-2018.csv";
+    char separator = ';';
+readCSVfileWithWHO(filename , separator);
+do
+   {
+    cout<< "\n World Health Institution (WHO) " << endl;
+    cout<< " International Classification of Diseases (ICD) \n " <<endl;
+    cout << "0 Quit              " << endl;
+    cout << "1 search for ICD code (s)(e.g. G4453)      " << endl;
+    cout << "2 search for diagnosis(s) (e.eg. angina , Ebola ..etc )      " << endl;
+        //an extra function to check all the list if required
+    cout << "3 print the linked list (extra)   " << endl;
+      cin >> choice;
+      switch (choice)
+      {
+      case '0': break;
+
+      case '1':  cout<< " to search for ICD code  : " ;
+                 cin>> searched_code ;
+                 search( head ,searched_code , 0 );
+                 break;
+
+
+
+      case '2': cout<< "to search for diagnosis  : ";
+                cin>> searched_code ;
+                search( head ,searched_code , 1);
+                break;
+
+///extra function to check the the all stored list
+      case '3':  printList();
+                break ;
+
+      default:    cout << "sorry wrong choice" << endl;
+      }
+   } while(choice != '0');
+   return 0;
+}
